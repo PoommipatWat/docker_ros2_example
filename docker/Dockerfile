@@ -10,6 +10,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
  git libcanberra-gtk-module libcanberra-gtk3-module fuse3 libfuse2 libqt5svg5-dev \
  python3-pip python3-opencv python3-tk python3-pyqt5.qtwebengine nano gedit
 
+# Install Cartographer packages
+RUN apt install -y ros-${ROS_DISTRO}-cartographer ros-${ROS_DISTRO}-cartographer-ros
+
 # Install Nav2 packages
 RUN apt install -y ros-${ROS_DISTRO}-navigation2 ros-${ROS_DISTRO}-nav2-bringup 
 
@@ -20,7 +23,7 @@ RUN apt install -y ros-${ROS_DISTRO}-robot-localization
 RUN apt install -y ros-${ROS_DISTRO}-turtlebot3-gazebo
 
 # Install additional Python modules
-RUN pip3 install matplotlib transforms3d
+RUN pip3 install matplotlib transforms3d numpy
 
 # Use Cyclone DDS as middleware
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -29,22 +32,6 @@ ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
 # Set HOME environment variable
 ENV HOME=/home
-
-# Create Colcon workspace with external dependencies
-RUN mkdir -p /home/workspace_ws/src
-WORKDIR /home/workspace_ws/src
-COPY docker/dependencies.repos .
-RUN vcs import < dependencies.repos
-RUN rm -rf dependencies.repos
-
-# Build the workspace
-WORKDIR /home/workspace_ws
-RUN . /opt/ros/${ROS_DISTRO}/setup.sh && colcon build
-
-# Download Groot2 AppImage and place it in the home folder.
-WORKDIR /home
-RUN curl -o Groot2.AppImage https://s3.us-west-1.amazonaws.com/download.behaviortree.dev/groot2_linux_installer/Groot2-v1.0.1-x86_64.AppImage \
- && chmod a+x Groot2.AppImage
 
 # Remove display warnings
 RUN mkdir /tmp/runtime-root

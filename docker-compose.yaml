@@ -1,18 +1,19 @@
 services:
-  abu_compose:
-    image: abu
+  exoreality_compose:
+    image: exoreality
     build:
       context: .
       dockerfile: docker/Dockerfile
       args:
         ROS_DISTRO: humble
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+# Uncomment if you use nvdia gpu        
+#    deploy:
+#      resources:
+#        reservations:
+#          devices:
+#            - driver: nvidia
+#              count: 1
+#              capabilities: [gpu]
     stdin_open: true
     tty: true
     network_mode: host
@@ -20,7 +21,7 @@ services:
     privileged: true
     stop_grace_period: 1s
     environment:
-      - ROS_DOMAIN_ID=101
+      - ROS_DOMAIN_ID=10
       - DISPLAY=${DISPLAY}
       - QT_X11_NO_MITSHM=1
       - NVIDIA_DRIVER_CAPABILITIES=all
@@ -30,13 +31,14 @@ services:
       - ${XAUTHORITY:-$HOME/.Xauthority}:/root/.Xauthority
       # Mount .bashrc from host
       - ./docker/bashrc:/home/.bashrc:rw
-      # Mount abu2024_ws
-      - ./abu2024_ws:/home/abu2024_ws:rw
+      # Mount workspace_ws
+      - ./workspace_ws:/home/workspace_ws:rw
 
-  navigation:
-    extends: abu_compose
-    command: bash -c "source ~/.bashrc && ros2 launch abu_core navigation.launch.py"
 
   gazebo:
-    extends: abu_compose
-    command: bash -c "source ~/.bashrc && ros2 launch abu_description gazebo.launch.py"
+    extends: exoreality_compose
+    command: bash -c "source ~/.bashrc && gazebo"
+
+  rviz:
+    extends: exoreality_compose
+    command: bash -c "source ~/.bashrc && rviz2"

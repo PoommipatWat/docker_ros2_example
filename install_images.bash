@@ -23,7 +23,6 @@ if ! command -v docker &> /dev/null; then
     sudo usermod -aG docker ${USER}
     su -s ${USER}
     docker run hello-world
-
 fi
 
 xhost +
@@ -31,14 +30,14 @@ xhost +
 # 2. Clone the repository and build docker compose
 echo "Cloning repository and building docker compose..."
 
-git clone https://github.com/Entity014/abu2024_ws.git
-docker compose build abu_compose
+pip install vcstool
+vcs import workspace_ws/src < docker/dependencies.repos
+
+docker compose build exoreality_compose
 docker compose up -d
-docker compose exec -it abu_compose bash -c "source .bashrc && cd ~/abu2024_ws/src/abu_description && rm -rf worlds && git clone https://github.com/PoommipatWat/worlds.git"
-docker compose exec -it abu_compose bash -c "source .bashrc && cd ~/abu2024_ws/src && rm -rf abu_moveit && rm -rf abu_moveit_config"
-docker compose exec -it abu_compose bash -c "source .bashrc && cd ~/abu2024_ws && colcon build && source install/setup.bash"
+
+docker compose exec -it exoreality_compose bash -c "cd ~/workspace_ws && colcon build --symlink-install"
 docker compose down
-echo "source /home/abu2024_ws/install/setup.bash" >> docker/bashrc
 
 read -p "Do you want to run the program now? (y/n): " choice
 if [ "$choice" = "y" ] || [ "$choice" = "Y" ]; then
@@ -47,3 +46,4 @@ else
     echo "Exiting the script."
     exit 0
 fi
+
