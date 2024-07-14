@@ -1,0 +1,42 @@
+services:
+  abu_compose:
+    image: abu
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        ROS_DISTRO: humble
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    stdin_open: true
+    tty: true
+    network_mode: host
+    ipc: host
+    privileged: true
+    stop_grace_period: 1s
+    environment:
+      - ROS_DOMAIN_ID=101
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - NVIDIA_DRIVER_CAPABILITIES=all
+    volumes:
+      # Mount X11 socket
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ${XAUTHORITY:-$HOME/.Xauthority}:/root/.Xauthority
+      # Mount .bashrc from host
+      - ./docker/bashrc:/home/.bashrc:rw
+      # Mount abu2024_ws
+      - ./abu2024_ws:/home/abu2024_ws:rw
+
+  navigation:
+    extends: abu_compose
+    command: bash -c "source ~/.bashrc && ros2 launch abu_core navigation.launch.py"
+
+  gazebo:
+    extends: abu_compose
+    command: bash -c "source ~/.bashrc && ros2 launch abu_description gazebo.launch.py"
