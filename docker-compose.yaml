@@ -34,11 +34,31 @@ services:
       # Mount workspace_ws
       - ./workspace_ws:/home/workspace_ws:rw
 
+  uros-agent:
+      image: husarion/micro-ros-agent:humble
+      stdin_open: true
+      tty: true
+      network_mode: host
+      ipc: host
+      privileged: true
+      stop_grace_period: 1s
+      volumes:
+        - /dev:/dev
+      # devices:
+      #   - /dev/ttyACM0:/dev/ttyACM0
+      environment:
+        - ROS_DOMAIN_ID=10
+      command: sleep infinity
 
-  gazebo:
-    extends: exoreality_compose
-    command: bash -c "source ~/.bashrc && gazebo"
+  uros1-agent:
+    extends: uros-agent
+    command: ros2 run micro_ros_agent micro_ros_agent serial -D /dev/ttyACM0 serial -b 115200
 
-  rviz:
-    extends: exoreality_compose
-    command: bash -c "source ~/.bashrc && rviz2"
+
+  # gazebo:
+  #   extends: exoreality_compose
+  #   command: bash -c "source ~/.bashrc && gazebo"
+
+  # rviz:
+  #   extends: exoreality_compose
+  #   command: bash -c "source ~/.bashrc && rviz2"
